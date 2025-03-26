@@ -3,6 +3,7 @@ package webserver
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/db"
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/metrics"
@@ -89,4 +90,39 @@ func (server *WebUIServer) UpdateSource(params []byte) error {
 		return err
 	}
 	return server.sourcesReaderWriter.UpdateSource(md)
+}
+
+// GetLatestMetrics returns the latest recorded values for each metric for a given database
+func (server *WebUIServer) GetLatestMetrics(dbname string) (string, error) {
+	// Get list of metrics for this database
+	rows, err := server.sinksWriter.GetLatestMetrics(dbname)
+	if err != nil {
+		return "", err
+	}
+	if rows == nil {
+		return "{}", nil
+	}
+	defer (*rows).Close()
+
+	// Convert to JSON
+	metrics := make(map[string]interface{})
+	for (*rows).Next() {
+		var metricName string
+		var data interface{}
+		var time time.Time
+		err := (*rows).Scan(&metricName, &data, &time)
+		if err != nil {
+			return "", err
+		}
+		metrics[metricName] = map[string]interface{}{
+			"value": data,
+			"time":  time,
+		}
+	}
+
+	jsonBytes, err := json.Marshal(metrics)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonBytes), nil
 }

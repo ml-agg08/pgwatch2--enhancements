@@ -653,3 +653,23 @@ func (pgw *PostgresWriter) AddDBUniqueMetricToListingTable(dbUnique, metric stri
 	_, err := pgw.sinkDb.Exec(pgw.ctx, sql, dbUnique, metric)
 	return err
 }
+
+// GetLatestMetrics returns the latest recorded values for each metric for a given database
+func (pgw *PostgresWriter) GetLatestMetrics(dbname string) (*pgx.Rows, error) {
+	query := `
+		SELECT 
+			'db_stats' as metric_name,
+			data as metric_data,
+			time as metric_time
+		FROM public.db_stats
+		WHERE dbname = $1
+		ORDER BY time DESC
+		LIMIT 1
+	`
+	
+	rows, err := pgw.sinkDb.Query(context.Background(), query, dbname)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query metrics: %v", err)
+	}
+	return &rows, nil
+}

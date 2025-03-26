@@ -104,7 +104,7 @@ func main() {
 	}
 
 	if _, err = webserver.Init(mainCtx, opts.WebUI, webui.WebUIFs, opts.MetricsReaderWriter,
-		opts.SourcesReaderWriter, reaper); err != nil {
+		opts.SourcesReaderWriter, opts.SinksWriter, reaper); err != nil {
 		exitCode.Store(cmdopts.ExitCodeWebUIError)
 		logger.Error("failed to initialize web UI: ", err)
 		return

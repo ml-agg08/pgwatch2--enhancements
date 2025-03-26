@@ -46,3 +46,27 @@ func (Server *WebUIServer) handleMetrics(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
 }
+
+func (Server *WebUIServer) handleLatestMetrics(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", "GET")
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	dbname := r.URL.Query().Get("dbname")
+	if dbname == "" {
+		http.Error(w, "dbname parameter is required", http.StatusBadRequest)
+		return
+	}
+
+	// Get the latest metrics from the database
+	latestMetrics, err := Server.GetLatestMetrics(dbname)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, _ = w.Write([]byte(latestMetrics))
+}

@@ -8,6 +8,7 @@ import (
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/log"
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/metrics"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"github.com/jackc/pgx/v5"
 )
 
 // JSONWriter is a sink that writes metric measurements to a file in JSON format.
@@ -66,4 +67,10 @@ func (jw *JSONWriter) SyncMetric(_, _, _ string) error {
 	}
 	// do nothing, we don't care
 	return nil
+}
+
+// GetLatestMetrics returns the latest recorded values for each metric for a given database
+func (jw *JSONWriter) GetLatestMetrics(dbname string) (*pgx.Rows, error) {
+	// JSON writer doesn't support querying metrics, return nil
+	return nil, nil
 }

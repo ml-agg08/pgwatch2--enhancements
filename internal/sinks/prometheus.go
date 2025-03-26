@@ -16,6 +16,7 @@ import (
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/metrics"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/jackc/pgx/v5"
 )
 
 // PrometheusWriter is a sink that allows to expose metric measurements to Prometheus scrapper.
@@ -290,4 +291,10 @@ func (promw *PrometheusWriter) MetricStoreMessageToPromMetrics(msg metrics.Measu
 		}
 	}
 	return promMetrics
+}
+
+// GetLatestMetrics returns the latest recorded values for each metric for a given database
+func (promw *PrometheusWriter) GetLatestMetrics(dbname string) (*pgx.Rows, error) {
+	// Prometheus writer doesn't support querying metrics, return nil
+	return nil, nil
 }

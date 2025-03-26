@@ -18,7 +18,19 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "links": [],
+  "links": [
+      {
+        "asDropdown": false,
+        "icon": "external-link",
+        "includeVars": true,
+        "keepTime": true,
+        "targetBlank": true,
+        "title": "Export as PDF",
+        "tooltip": "Export dashboard as PDF",
+        "type": "link",
+        "url": "/api/reports/dashboards/${uid}/pdf?from=${from}&to=${to}&refresh=${refresh}"
+      }
+    ],
   "panels": [
     {
       "datasource": {

@@ -8,12 +8,14 @@ import (
 	"sync"
 
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/metrics"
+	"github.com/jackc/pgx/v5"
 )
 
-// Writer is an interface that writes metrics values
+// Writer defines the interface for metric sinks
 type Writer interface {
 	SyncMetric(dbUnique, metricName, op string) error
 	Write(msgs []metrics.MeasurementEnvelope) error
+	GetLatestMetrics(dbname string) (*pgx.Rows, error)
 }
 
 // MultiWriter ensures the simultaneous storage of data in several storages.
@@ -74,4 +76,17 @@ func (mw *MultiWriter) Write(msgs []metrics.MeasurementEnvelope) (err error) {
 		err = errors.Join(err, w.Write(msgs))
 	}
 	return
+}
+
+func (mw *MultiWriter) GetLatestMetrics(dbname string) (*pgx.Rows, error) {
+	for _, w := range mw.writers {
+		rows, err := w.GetLatestMetrics(dbname)
+		if err != nil {
+			return nil, err
+		}
+		if rows != nil {
+			return rows, nil
+		}
+	}
+	return nil, nil
 }

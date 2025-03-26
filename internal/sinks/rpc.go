@@ -6,6 +6,7 @@ import (
 
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/log"
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/metrics"
+	"github.com/jackc/pgx/v5"
 )
 
 // RPCWriter is a sink that sends metric measurements to a remote server using the RPC protocol.
@@ -78,4 +79,10 @@ func (rw *RPCWriter) SyncMetric(dbUnique string, metricName string, op string) e
 func (rw *RPCWriter) watchCtx() {
 	<-rw.ctx.Done()
 	rw.client.Close()
+}
+
+// GetLatestMetrics returns the latest recorded values for each metric for a given database
+func (rw *RPCWriter) GetLatestMetrics(dbname string) (*pgx.Rows, error) {
+	// RPC writer doesn't support querying metrics, return nil
+	return nil, nil
 }

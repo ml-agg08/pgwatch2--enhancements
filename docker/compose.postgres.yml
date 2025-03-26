@@ -15,7 +15,7 @@ services:
       - "-ctrack_io_timing=on"
       - "-ctrack_functions=pl"
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:

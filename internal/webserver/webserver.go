@@ -17,6 +17,7 @@ import (
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/log"
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/metrics"
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/sources"
+	"github.com/cybertec-postgresql/pgwatch/v3/internal/sinks"
 )
 
 type ReadyChecker interface {
@@ -31,10 +32,11 @@ type WebUIServer struct {
 	uiFS                fs.FS // webui files
 	metricsReaderWriter metrics.ReaderWriter
 	sourcesReaderWriter sources.ReaderWriter
+	sinksWriter         sinks.Writer
 	readyChecker        ReadyChecker
 }
 
-func Init(ctx context.Context, opts CmdOpts, webuifs fs.FS, mrw metrics.ReaderWriter, srw sources.ReaderWriter, rc ReadyChecker) (*WebUIServer, error) {
+func Init(ctx context.Context, opts CmdOpts, webuifs fs.FS, mrw metrics.ReaderWriter, srw sources.ReaderWriter, sw sinks.Writer, rc ReadyChecker) (*WebUIServer, error) {
 	if opts.WebDisable == WebDisableAll {
 		return nil, nil
 	}
@@ -53,6 +55,7 @@ func Init(ctx context.Context, opts CmdOpts, webuifs fs.FS, mrw metrics.ReaderWr
 		uiFS:                webuifs,
 		metricsReaderWriter: mrw,
 		sourcesReaderWriter: srw,
+		sinksWriter:         sw,
 		readyChecker:        rc,
 	}
 
@@ -61,6 +64,8 @@ func Init(ctx context.Context, opts CmdOpts, webuifs fs.FS, mrw metrics.ReaderWr
 	mux.Handle("/metric", NewEnsureAuth(s.handleMetrics))
 	mux.Handle("/preset", NewEnsureAuth(s.handlePresets))
 	mux.Handle("/log", NewEnsureAuth(s.serveWsLog))
+	mux.Handle("/latest-metrics", NewEnsureAuth(s.handleLatestMetrics))
+	mux.Handle("/db-overview", NewEnsureAuth(s.handleDbOverview))
 	mux.HandleFunc("/login", s.handleLogin)
 	mux.HandleFunc("/liveness", s.handleLiveness)
 	mux.HandleFunc("/readiness", s.handleReadiness)
