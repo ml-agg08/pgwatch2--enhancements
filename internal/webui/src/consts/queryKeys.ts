@@ -1,5 +1,7 @@
 export enum QueryKeys {
-  Metric = "Metric",
-  Preset = "Preset",
-  Source = "Source",
+  Metric = "metric",
+  Preset = "preset",
+  Source = "source",
+  Log = "log",
+  DbOverview = "db-overview"
 };

@@ -19,7 +19,6 @@ export const useSourcesGridColumns = (): GridColDef<Source>[] => ([
   {
     field: "Name",
     headerName: "Name",
-    width: 150,
   },
   {
     field: "Group",
@@ -136,7 +135,7 @@ export const useSourcesGridColumns = (): GridColDef<Source>[] => ([
     field: "Actions",
     headerName: "Actions",
     headerAlign: "center",
-    width: 300,
+    width: 150,
     renderCell: ({ row }) => <SourcesGridActions source={row} />
   }
 ]);
