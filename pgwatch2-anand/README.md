@@ -1,7 +1,5 @@
-PGWATCH2 - ANAND GOPAN G
 
-1.
-
+1.  
 📊 pgwatch2 - Downloadable Database Summary Feature
 Overview
 This enhancement allows users to download a summary of database statistics in a text format directly from the pgwatch2 UI. Users can select a database and click the "Download as Text" button to retrieve an overview of key metrics.
