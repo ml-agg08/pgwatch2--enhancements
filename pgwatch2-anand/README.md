@@ -1,4 +1,4 @@
-# PGWATCH2 - Anand Gopan
+# PGWATCH2 - IMPROVEMENTS&LEARNINGS
 
 ## 📊 PGWatch2 - Downloadable Database Summary Feature
 
