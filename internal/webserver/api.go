@@ -2,6 +2,7 @@ package webserver
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"time"
 
@@ -24,7 +25,7 @@ func (server *WebUIServer) UpdatePreset(name string, params []byte) error {
 	return server.metricsReaderWriter.UpdatePreset(name, p)
 }
 
-// GetPresets ret	urns the list of available presets
+// GetPresets returns the list of available presets
 func (server *WebUIServer) GetPresets() (res string, err error) {
 	var mr *metrics.Metrics
 	if mr, err = server.metricsReaderWriter.GetMetrics(); err != nil {
@@ -107,15 +108,51 @@ func (server *WebUIServer) GetLatestMetrics(dbname string) (string, error) {
 	// Convert to JSON
 	metrics := make(map[string]interface{})
 	for (*rows).Next() {
-		var metricName string
-		var data interface{}
-		var time time.Time
-		err := (*rows).Scan(&metricName, &data, &time)
+		var (
+			time            time.Time
+			tps             sql.NullFloat64
+			qps             sql.NullFloat64
+			avgQueryRuntime sql.NullFloat64
+			blksHitRatio    sql.NullFloat64
+			dbSize          sql.NullInt64
+			txErrorRatio    sql.NullFloat64
+		)
+		
+		err := (*rows).Scan(
+			&time,
+			&tps,
+			&qps,
+			&avgQueryRuntime,
+			&blksHitRatio,
+			&dbSize,
+			&txErrorRatio,
+		)
 		if err != nil {
 			return "", err
 		}
-		metrics[metricName] = map[string]interface{}{
-			"value": data,
+
+		metrics["tps"] = map[string]interface{}{
+			"value": tps.Float64,
+			"time":  time,
+		}
+		metrics["qps"] = map[string]interface{}{
+			"value": qps.Float64,
+			"time":  time,
+		}
+		metrics["avg_query_runtime"] = map[string]interface{}{
+			"value": avgQueryRuntime.Float64,
+			"time":  time,
+		}
+		metrics["blks_hit_ratio"] = map[string]interface{}{
+			"value": blksHitRatio.Float64,
+			"time":  time,
+		}
+		metrics["db_size"] = map[string]interface{}{
+			"value": dbSize.Int64,
+			"time":  time,
+		}
+		metrics["tx_error_ratio"] = map[string]interface{}{
+			"value": txErrorRatio.Float64,
 			"time":  time,
 		}
 	}

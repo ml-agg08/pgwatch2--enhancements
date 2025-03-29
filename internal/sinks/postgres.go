@@ -657,14 +657,128 @@ func (pgw *PostgresWriter) AddDBUniqueMetricToListingTable(dbUnique, metric stri
 // GetLatestMetrics returns the latest recorded values for each metric for a given database
 func (pgw *PostgresWriter) GetLatestMetrics(dbname string) (*pgx.Rows, error) {
 	query := `
+		WITH latest_metrics AS (
+			SELECT 
+				time,
+				data->>'xact_commit' as xact_commit,
+				data->>'xact_rollback' as xact_rollback,
+				data->>'numbackends' as numbackends,
+				data->>'blks_hit' as blks_hit,
+				data->>'blks_read' as blks_read,
+				data->>'blks_dirtied' as blks_dirtied,
+				data->>'blks_written' as blks_written,
+				data->>'temp_bytes' as temp_bytes
+			FROM db_stats
+			WHERE dbname = $1
+			ORDER BY time DESC
+			LIMIT 2
+		),
+		latest_db_size AS (
+			SELECT 
+				time,
+				data->>'size_b' as size
+			FROM db_size
+			WHERE dbname = $1
+			ORDER BY time DESC
+			LIMIT 1
+		),
+		latest_statements AS (
+			SELECT 
+				time,
+				(data->>'total_time')::float8 as total_time,
+				(data->>'calls')::int8 as calls,
+				tag_data->>'queryid' as queryid,
+				tag_data->>'query' as query,
+				LAG((data->>'total_time')::float8) OVER (PARTITION BY tag_data->>'queryid' ORDER BY time) as prev_total_time,
+				LAG((data->>'calls')::int8) OVER (PARTITION BY tag_data->>'queryid' ORDER BY time) as prev_calls,
+				LAG(time) OVER (PARTITION BY tag_data->>'queryid' ORDER BY time) as prev_time
+			FROM stat_statements
+			WHERE dbname = $1 
+			AND NOT tag_data->>'query' LIKE '%epoch_ns%'  -- exclude pgwatch queries
+			ORDER BY time DESC
+		),
+		metrics_with_lag AS (
+			SELECT 
+				time,
+				xact_commit::int8,
+				xact_rollback::int8,
+				(xact_commit::int8 + xact_rollback::int8) as total_xacts,
+				numbackends::int8,
+				blks_hit::int8,
+				blks_read::int8,
+				blks_dirtied::int8,
+				blks_written::int8,
+				temp_bytes::int8,
+				LAG(xact_commit::int8 + xact_rollback::int8) OVER (ORDER BY time) as prev_total_xacts,
+				LAG(time) OVER (ORDER BY time) as prev_time,
+				LAG(xact_commit::int8) OVER (ORDER BY time) as prev_xact_commit,
+				LAG(xact_rollback::int8) OVER (ORDER BY time) as prev_xact_rollback
+			FROM latest_metrics
+		),
+		qps_calc AS (
+			SELECT 
+				time,
+				(calls - prev_calls)::float8 / EXTRACT(EPOCH FROM (time - prev_time)) as qps
+			FROM (
+				SELECT 
+					time,
+					(data->>'calls')::int8 as calls,
+					LAG((data->>'calls')::int8) OVER (ORDER BY time) as prev_calls,
+					LAG(time) OVER (ORDER BY time) as prev_time
+				FROM stat_statements_calls
+				WHERE dbname = $1
+				ORDER BY time DESC
+				LIMIT 2
+			) x
+			WHERE calls >= prev_calls AND time > prev_time
+			LIMIT 1
+		),
+		avg_query_runtime_calc AS (
+			SELECT 
+				avg((tt-tt_lag)::numeric / (c-c_lag)) as avg_query_runtime
+			FROM (
+				SELECT 
+					(data->>'total_time')::float8 as tt,
+					LAG((data->>'total_time')::float8) OVER (ORDER BY time) as tt_lag,
+					(data->>'calls')::int8 as c,
+					LAG((data->>'calls')::int8) OVER (ORDER BY time) as c_lag,
+					time
+				FROM stat_statements_calls
+				WHERE dbname = $1
+				ORDER BY time DESC
+				LIMIT 2
+			) x
+			WHERE c > c_lag AND tt >= tt_lag AND c > 100
+		),
+		latest_metrics_only AS (
+			SELECT * FROM metrics_with_lag WHERE time > prev_time LIMIT 1
+		)
 		SELECT 
-			'db_stats' as metric_name,
-			data as metric_data,
-			time as metric_time
-		FROM public.db_stats
-		WHERE dbname = $1
-		ORDER BY time DESC
-		LIMIT 1
+			m.time,
+			CASE 
+				WHEN m.time > m.prev_time 
+				THEN (m.total_xacts - m.prev_total_xacts) / EXTRACT(EPOCH FROM (m.time - m.prev_time))
+				ELSE 0 
+			END as tps,
+			COALESCE(q.qps, 0) as qps,
+			COALESCE(r.avg_query_runtime, 0) as avg_query_runtime,
+			CASE 
+				WHEN (m.blks_hit + m.blks_read) > 0 
+				THEN (m.blks_hit::float / (m.blks_hit + m.blks_read)) * 100 
+				ELSE 0 
+			END as blks_hit_ratio,
+			COALESCE(ds.size::int8, 0) as db_size,
+			CASE 
+				WHEN m.time > m.prev_time AND ((m.xact_commit - m.prev_xact_commit) + (m.xact_rollback - m.prev_xact_rollback)) > 0
+				THEN ((m.xact_rollback - m.prev_xact_rollback)::numeric * 100) / 
+						((m.xact_commit - m.prev_xact_commit) + 
+						(m.xact_rollback - m.prev_xact_rollback))
+				ELSE 0 
+			END as tx_error_ratio
+		FROM latest_metrics_only m
+		LEFT JOIN latest_db_size ds ON true
+		LEFT JOIN qps_calc q ON true
+		LEFT JOIN avg_query_runtime_calc r ON true;
 	`
 	
 	rows, err := pgw.sinkDb.Query(context.Background(), query, dbname)

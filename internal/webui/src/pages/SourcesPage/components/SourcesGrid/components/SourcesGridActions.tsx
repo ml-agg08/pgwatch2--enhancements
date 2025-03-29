@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { Box, IconButton, Stack } from "@mui/material";
+import { Box, IconButton } from "@mui/material";
 import { GridActions } from "components/GridActions/GridActions";
 import { WarningDialog } from "components/WarningDialog/WarningDialog";
 import { useSourceFormContext } from "contexts/SourceForm/SourceForm.context";
@@ -46,18 +46,15 @@ export const SourcesGridActions = ({ source }: Props) => {
   }, [isSuccess]);
 
   return (
-    <Stack direction="row" spacing={1} alignItems="center">
-      <Box>
-        <GridActions handleEditClick={handleEditClick} handleDeleteClick={handleDeleteClick}>
-          <IconButton title="Copy" onClick={handleCopyClick}>
-            <ContentCopyIcon />
-          </IconButton>
-        </GridActions>
-      </Box>
-      <Box>
-        <LatestMetricsButton dbname={source.Name} />
-      </Box>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', minWidth: 'fit-content', justifyContent: 'flex-end',
+      overflowX: 'auto', whiteSpace: 'nowrap' }}>
+      <GridActions handleEditClick={handleEditClick} handleDeleteClick={handleDeleteClick}>
+        <IconButton title="Copy" onClick={handleCopyClick}>
+          <ContentCopyIcon />
+        </IconButton>
+      </GridActions>
+      <LatestMetricsButton dbname={source.Name} />
       <WarningDialog open={dialogOpen} message={message} onClose={handleDialogClose} onSubmit={handleSubmit} />
-    </Stack>
+    </Box>
   );
 };
