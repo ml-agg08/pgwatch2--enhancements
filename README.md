@@ -465,7 +465,9 @@ AFTER:
 
 ![Image](https://github.com/user-attachments/assets/b5aeedec-77b6-4d0f-b40c-141ec59d0405)
 
-## LOGS PAGE UI UPDATIONS:
+
+
+ ## 🎨LOGS PAGE UI UPDATIONS:
 
  BEFORE:
 ```
