@@ -1,4 +1,4 @@
-# pgwatch UI Improvements 
+# 🎨pgwatch(v3) UI Improvements 
 
 ## This documentation details the complete transformation of a basic login form into a modern,interactive, and secure authentication interface using Material-UI (MUI), TSS-React and Yup validation. The enhancements include:
 
@@ -464,6 +464,98 @@ AFTER:
 
 
 ![Image](https://github.com/user-attachments/assets/b5aeedec-77b6-4d0f-b40c-141ec59d0405)
+
+## LOGS PAGE UI UPDATIONS:
+
+ BEFORE:
+```
+
+import { makeStyles } from "tss-react/mui";
+
+export const useLogsStyles = makeStyles()(
+  () => ({
+    root: {
+      backgroundColor: "black",
+      flexGrow: 1,
+      position: "relative",
+      width: "100%",
+      height: "100%",
+    },
+    grid: {
+      color: "white",
+      position: "absolute",
+      inset: "1em",
+      overflowY: "auto",
+      overflowX: "hidden",
+      wordWrap: "break-word",
+      whiteSpace: "pre-wrap",
+      fontSize: "14px",
+      margin: 0
+    },
+    log: {
+      margin: "0 0 0.5em",
+    },
+  }),
+);
+
+```
+
+
+AFTER:
+
+```
+import { makeStyles } from "tss-react/mui";
+
+export const useLogsStyles = makeStyles()(
+  () => ({
+    root: {
+      display: "flex",                // Added Flexbox
+      backgroundColor: "white",       //  Changed from black
+      flexGrow: 1,
+      position: "relative",
+      width: "100%",
+      height: "100%",
+    },
+    grid: {
+      color: "black",                 //  Changed from white
+      position: "absolute",
+      inset: "1em",
+      overflowY: "auto",
+      overflowX: "hidden",
+      wordWrap: "break-word",
+      whiteSpace: "pre-wrap",
+      fontSize: "14px",
+      margin: 0,
+      display: "flex",                // Added Flexbox
+      flexDirection: "column",        // Added column layout
+      gap: "5px",                    //  Added consistent spacing
+    },
+    log: {
+      margin: "0 0 0.5em",
+    },
+  }),
+);
+```
+OUTPUTS:
+
+
+BEFORE:
+
+
+![Image](https://github.com/user-attachments/assets/f3c09dfc-0aac-44f9-b812-b07507f79d39)
+
+
+AFTER:
+
+![Image](https://github.com/user-attachments/assets/6cdb29fe-8b80-461d-8b6d-28fe63909f7f)
+
+
+🚀 Feature Benefits
+•	Improved User Experience: Smooth transitions and hover effects make the UI feel more responsive and also changed background color to maintain uniformity.
+
+
+•	Responsiveness: Flexbox and dynamic spacing adapt to different screen sizes.
+
 
 
 ## 📌 Need more details? Check out in this :
