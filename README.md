@@ -8,7 +8,7 @@ For more details on UI enhancements, refer to the `pavitra` branch, where its do
 
 ### Environment Setup & Learning Process
 This document describes the process of setting up the development environment for working on pgwatch (v3) enhancements. It also includes personal insights and learnings gained during the development of the latest metrics button feature.
-- [Read the Environment Setup & Learning Process Guide](./ENVIRONMENTAL%20SETUP%20AND%20LEARNING%20PROCESS%20.pdf)
+- [Read the Environment Setup & Learning Process Guide](./ENVIRONMENTAL%20SETUP%20AND%20LEARNING%20PROCESS.pdf)
 
 ### Implementation Details
 This document contains the details of implementation of the latest metrics button
