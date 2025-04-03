@@ -126,7 +126,14 @@ function toggleTheme() {
 
 ### Screenshots (before vs after)
 
+# Light mode
+
 ![Description](https://github.com/ml-agg08/pgwatch2--enhancements/blob/main/pgwatch2-anand/Screenshot%20from%202025-03-29%2005-04-59.png?raw=true)
+
+# Dark Mode
+
+![Description](https://github.com/ml-agg08/pgwatch2--enhancements/blob/main/pgwatch2-anand/Screenshot%20from%202025-03-29%2005-05-09.png?raw=true)
+
 
 
 ### 🔍 Testing Checklist
