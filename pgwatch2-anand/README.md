@@ -134,6 +134,10 @@ function toggleTheme() {
 
 ![Description](https://github.com/ml-agg08/pgwatch2--enhancements/blob/main/pgwatch2-anand/Screenshot%20from%202025-03-29%2005-05-09.png?raw=true)
 
+# Toggle Button
+
+![Description](https://github.com/ml-agg08/pgwatch2--enhancements/blob/main/pgwatch2-anand/Screenshot%20from%202025-03-29%2005-05-37.png?raw=true)
+
 
 
 ### 🔍 Testing Checklist
