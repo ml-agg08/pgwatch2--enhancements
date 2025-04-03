@@ -41,7 +41,7 @@ We collectively:
 
 While this process was **long and tiresome, each of us contributed equally** to understanding the system. The excitement of taking **baby steps—like successfully connecting and monitoring databases—was a huge motivator.  
 
-📄 A **detailed documentation** of our **learning process** is available in the **[`arjun` branch](https://github.com/ml-agg08/pgwatch2--enhancements/blob/arjun/README.md)**. While the documentation is maintained there, it represents the **collective effort** of all three team members.  
+📄 A **detailed documentation** of our **learning process** is available in the **[`arjun` branch]([https://github.com/ml-agg08/pgwatch2--enhancements/blob/arjun/README.md](https://github.com/ml-agg08/pgwatch2--enhancements/blob/arjun/ENVIRONMENTAL%20SETUP%20AND%20LEARNING%20PROCESS.pdf))**. While the documentation is maintained there, it represents the **collective effort** of all three team members.  
 
 ---
 
