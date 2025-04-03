@@ -51,4 +51,7 @@ While this process was **long and tiresome, each of us contributed equally** to 
 
 ---
 
+## SDD
+- We've drafted a SDD incorporating all the imporvements made by us, you can get it from here: [SDD](https://github.com/ml-agg08/pgwatch2--enhancements/blob/main/pgwatch2-anand/Software%20Design%20Document.pdf)
+
 🚀 **Happy Monitoring!**
