@@ -69,7 +69,7 @@ def stats_summary(self, **params):
         return text_content
 ```
 
-#### Sreenshots
+### Screenshots (before vs after)
 
 ## Before
 
@@ -139,6 +139,12 @@ function toggleTheme() {
 ```
 
 ### Screenshots (before vs after)
+
+## Before
+
+![Description](https://github.com/ml-agg08/pgwatch2--enhancements/blob/main/pgwatch2-anand/WhatsApp%20Image%202025-03-27%20at%2015.20.21_bc6a981a.jpg?raw=true)
+
+## After
 
 # Light mode
 
