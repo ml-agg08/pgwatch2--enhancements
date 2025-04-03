@@ -69,6 +69,20 @@ def stats_summary(self, **params):
         return text_content
 ```
 
+#### Sreenshots
+
+## Before
+
+![Description](https://github.com/ml-agg08/pgwatch2--enhancements/blob/main/pgwatch2-anand/WhatsApp%20Image%202025-04-03%20at%2011.26.53_c521ed35.jpg?raw=true)
+
+## After
+
+![Description](https://github.com/ml-agg08/pgwatch2--enhancements/blob/main/pgwatch2-anand/Screenshot%20from%202025-03-29%2005-05-59.png?raw=true)
+
+![Description](https://github.com/ml-agg08/pgwatch2--enhancements/blob/main/pgwatch2-anand/Screenshot%20from%202025-03-29%2005-06-10.png?raw=true)
+
+![Description](https://github.com/ml-agg08/pgwatch2--enhancements/blob/main/pgwatch2-anand/Screenshot%20from%202025-03-29%2005-06-30.png?raw=true)
+
 ### 🚀 Feature Benefits
 - **Quickly export** database statistics for offline review.
 - **Lightweight & easy-to-use**, requiring no extra dependencies.
