@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"time"
-
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/db"
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/metrics"
 	"github.com/cybertec-postgresql/pgwatch/v3/internal/sources"
@@ -107,6 +107,9 @@ func (server *WebUIServer) GetLatestMetrics(dbname string) (string, error) {
 
 	// Convert to JSON
 	metrics := make(map[string]interface{})
+	var latestTime time.Time
+	metricValues := make(map[string]interface{})
+
 	for (*rows).Next() {
 		var (
 			time            time.Time
@@ -116,6 +119,8 @@ func (server *WebUIServer) GetLatestMetrics(dbname string) (string, error) {
 			blksHitRatio    sql.NullFloat64
 			dbSize          sql.NullInt64
 			txErrorRatio    sql.NullFloat64
+			nonIdleSessions sql.NullInt64
+			tempBytes       sql.NullInt64
 		)
 		
 		err := (*rows).Scan(
@@ -126,40 +131,81 @@ func (server *WebUIServer) GetLatestMetrics(dbname string) (string, error) {
 			&blksHitRatio,
 			&dbSize,
 			&txErrorRatio,
+			&nonIdleSessions,
+			&tempBytes,
 		)
 		if err != nil {
 			return "", err
 		}
 
-		metrics["tps"] = map[string]interface{}{
-			"value": tps.Float64,
-			"time":  time,
+		latestTime = time
+		metricValues["tps"] = fmt.Sprintf("%.4f", tps.Float64)
+		metricValues["qps"] = fmt.Sprintf("%.4f", qps.Float64)
+		metricValues["avg_query_runtime"] = fmt.Sprintf("%.4f", avgQueryRuntime.Float64)
+		metricValues["blks_hit_ratio"] = fmt.Sprintf("%.4f", blksHitRatio.Float64)
+		
+		// Format db_size in MB
+		if dbSize.Valid {
+			metricValues["db_size"] = fmt.Sprintf("%.4f MB", float64(dbSize.Int64)/1024/1024)
+		} else {
+			metricValues["db_size"] = "0.0000 MB"
 		}
-		metrics["qps"] = map[string]interface{}{
-			"value": qps.Float64,
-			"time":  time,
-		}
-		metrics["avg_query_runtime"] = map[string]interface{}{
-			"value": avgQueryRuntime.Float64,
-			"time":  time,
-		}
-		metrics["blks_hit_ratio"] = map[string]interface{}{
-			"value": blksHitRatio.Float64,
-			"time":  time,
-		}
-		metrics["db_size"] = map[string]interface{}{
-			"value": dbSize.Int64,
-			"time":  time,
-		}
-		metrics["tx_error_ratio"] = map[string]interface{}{
-			"value": txErrorRatio.Float64,
-			"time":  time,
+		
+		metricValues["tx_error_ratio"] = fmt.Sprintf("%.4f", txErrorRatio.Float64)
+		metricValues["non_idle_sessions"] = nonIdleSessions.Int64
+		
+		// Format temp_bytes_written in KB
+		if tempBytes.Valid {
+			metricValues["temp_bytes_written"] = fmt.Sprintf("%.4f KB", float64(tempBytes.Int64)/1024)
+		} else {
+			metricValues["temp_bytes_written"] = "0.0000 KB"
 		}
 	}
+
+	metrics["time"] = latestTime
+	metrics["values"] = metricValues
 
 	jsonBytes, err := json.Marshal(metrics)
 	if err != nil {
 		return "", err
 	}
 	return string(jsonBytes), nil
+}
+
+// MetricsResponse represents the structure of a single metrics response
+type MetricsResponse struct {
+	Time   time.Time              `json:"time"`
+	Values map[string]interface{} `json:"values"`
+}
+
+// BatchMetricsResponse represents the response structure for batch metrics
+type BatchMetricsResponse struct {
+	Results map[string]*MetricsResponse `json:"results"`
+	Errors  map[string]string          `json:"errors"`
+}
+
+// GetBatchLatestMetrics fetches the latest metrics for multiple databases
+func (server *WebUIServer) GetBatchLatestMetrics(dbnames []string) (*BatchMetricsResponse, error) {
+	response := &BatchMetricsResponse{
+		Results: make(map[string]*MetricsResponse),
+		Errors:  make(map[string]string),
+	}
+
+	for _, dbname := range dbnames {
+		metricsStr, err := server.GetLatestMetrics(dbname)
+		if err != nil {
+			response.Errors[dbname] = err.Error()
+			continue
+		}
+
+		var metricsData MetricsResponse
+		if err := json.Unmarshal([]byte(metricsStr), &metricsData); err != nil {
+			response.Errors[dbname] = fmt.Sprintf("Failed to parse metrics data: %v", err)
+			continue
+		}
+
+		response.Results[dbname] = &metricsData
+	}
+
+	return response, nil
 }

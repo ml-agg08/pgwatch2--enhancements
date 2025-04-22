@@ -667,7 +667,8 @@ func (pgw *PostgresWriter) GetLatestMetrics(dbname string) (*pgx.Rows, error) {
 				data->>'blks_read' as blks_read,
 				data->>'blks_dirtied' as blks_dirtied,
 				data->>'blks_written' as blks_written,
-				data->>'temp_bytes' as temp_bytes
+				data->>'temp_bytes' as temp_bytes,
+				LAG((data->>'temp_bytes')::int8) OVER (ORDER BY time) as prev_temp_bytes
 			FROM db_stats
 			WHERE dbname = $1
 			ORDER BY time DESC
@@ -678,6 +679,15 @@ func (pgw *PostgresWriter) GetLatestMetrics(dbname string) (*pgx.Rows, error) {
 				time,
 				data->>'size_b' as size
 			FROM db_size
+			WHERE dbname = $1
+			ORDER BY time DESC
+			LIMIT 1
+		),
+		latest_backends AS (
+			SELECT 
+				time,
+				(data->>'idleintransaction')::int + (data->>'waiting')::int + (data->>'active')::int as non_idle_sessions
+			FROM backends
 			WHERE dbname = $1
 			ORDER BY time DESC
 			LIMIT 1
@@ -709,6 +719,7 @@ func (pgw *PostgresWriter) GetLatestMetrics(dbname string) (*pgx.Rows, error) {
 				blks_dirtied::int8,
 				blks_written::int8,
 				temp_bytes::int8,
+				prev_temp_bytes::int8,
 				LAG(xact_commit::int8 + xact_rollback::int8) OVER (ORDER BY time) as prev_total_xacts,
 				LAG(time) OVER (ORDER BY time) as prev_time,
 				LAG(xact_commit::int8) OVER (ORDER BY time) as prev_xact_commit,
@@ -774,11 +785,18 @@ func (pgw *PostgresWriter) GetLatestMetrics(dbname string) (*pgx.Rows, error) {
 						((m.xact_commit - m.prev_xact_commit) + 
 						(m.xact_rollback - m.prev_xact_rollback))
 				ELSE 0 
-			END as tx_error_ratio
+			END as tx_error_ratio,
+			COALESCE(b.non_idle_sessions, 0) as non_idle_sessions,
+			CASE 
+				WHEN m.temp_bytes >= m.prev_temp_bytes
+				THEN m.temp_bytes - m.prev_temp_bytes
+				ELSE 0 
+			END as temp_bytes_written
 		FROM latest_metrics_only m
 		LEFT JOIN latest_db_size ds ON true
 		LEFT JOIN qps_calc q ON true
-		LEFT JOIN avg_query_runtime_calc r ON true;
+		LEFT JOIN avg_query_runtime_calc r ON true
+		LEFT JOIN latest_backends b ON true;
 	`
 	
 	rows, err := pgw.sinkDb.Query(context.Background(), query, dbname)

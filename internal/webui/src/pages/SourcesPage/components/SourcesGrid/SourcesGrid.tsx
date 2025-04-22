@@ -1,3 +1,5 @@
+import React from 'react';
+import { Box } from '@mui/material';
 import { DataGrid } from "@mui/x-data-grid";
 import { Error } from "components/Error/Error";
 import { Loading } from "components/Loading/Loading";
@@ -8,6 +10,7 @@ import { usePageStyles } from "styles/page";
 import { useSources } from "queries/Source";
 import { useSourcesGridColumns } from "./SourcesGrid.consts";
 import { SourcesGridToolbar } from "./components/SourcesGridToolbar";
+import { CompareMetricsButton } from '../../../../components/CompareMetricsButton/CompareMetricsButton';
 
 export const SourcesGrid = () => {
   const { classes } = usePageStyles();
@@ -16,6 +19,15 @@ export const SourcesGrid = () => {
 
   const columns = useSourcesGridColumns();
   const { columnVisibility, onColumnVisibilityChange } = useGridColumnVisibility('SOURCES_GRID', columns);
+
+  const databases = data?.map(source => source.Name) || [];
+
+  const CustomToolbar = () => (
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <SourcesGridToolbar />
+      <CompareMetricsButton databases={databases} />
+    </Box>
+  );
 
   if (isLoading) {
     return (
@@ -38,7 +50,7 @@ export const SourcesGrid = () => {
           columns={columns}
           rows={data ?? []}
           rowsPerPageOptions={[]}
-          components={{ Toolbar: () => <SourcesGridToolbar /> }}
+          components={{ Toolbar: CustomToolbar }}
           disableColumnMenu
           columnVisibilityModel={columnVisibility}
           onColumnVisibilityModelChange={onColumnVisibilityChange}

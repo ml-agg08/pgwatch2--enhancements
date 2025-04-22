@@ -65,6 +65,7 @@ func Init(ctx context.Context, opts CmdOpts, webuifs fs.FS, mrw metrics.ReaderWr
 	mux.Handle("/preset", NewEnsureAuth(s.handlePresets))
 	mux.Handle("/log", NewEnsureAuth(s.serveWsLog))
 	mux.Handle("/latest-metrics", NewEnsureAuth(s.handleLatestMetrics))
+	mux.Handle("/batch-latest-metrics", NewEnsureAuth(s.handleBatchLatestMetrics))
 	mux.HandleFunc("/login", s.handleLogin)
 	mux.HandleFunc("/liveness", s.handleLiveness)
 	mux.HandleFunc("/readiness", s.handleReadiness)

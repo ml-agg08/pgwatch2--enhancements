@@ -1,6 +1,8 @@
 package webserver
 
 import (
+	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -69,4 +71,48 @@ func (Server *WebUIServer) handleLatestMetrics(w http.ResponseWriter, r *http.Re
 
 	w.Header().Set("Content-Type", "application/json")
 	_, _ = w.Write([]byte(latestMetrics))
+}
+
+// handleBatchLatestMetrics handles requests for fetching latest metrics for multiple databases
+func (server *WebUIServer) handleBatchLatestMetrics(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.Header().Set("Allow", "POST")
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Set CORS headers if needed
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Token")
+
+	var dbnames []string
+	if err := json.NewDecoder(r.Body).Decode(&dbnames); err != nil {
+		server.l.WithError(err).Error("Failed to decode request body")
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if len(dbnames) == 0 {
+		http.Error(w, "No database names provided", http.StatusBadRequest)
+		return
+	}
+
+	response, err := server.GetBatchLatestMetrics(dbnames)
+	if err != nil {
+		server.l.WithError(err).Error("Failed to fetch batch metrics")
+		http.Error(w, fmt.Sprintf("Failed to fetch metrics: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Check if we got any results
+	if len(response.Results) == 0 && len(response.Errors) == 0 {
+		http.Error(w, "No metrics data available", http.StatusNotFound)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		server.l.WithError(err).Error("Failed to encode response")
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }

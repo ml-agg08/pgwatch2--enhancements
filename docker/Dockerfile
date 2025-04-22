@@ -4,7 +4,6 @@
 FROM node:22 AS uibuilder
 ADD internal/webui /webui
 RUN cd webui && yarn install --network-timeout 100000 && \
-    yarn add jspdf @types/jspdf && \
     yarn build
 
 # ----------------------------------------------------------------
