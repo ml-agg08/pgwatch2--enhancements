@@ -1,6 +1,6 @@
 # pgwatch (v3) Enhancements
 
-This branch contains code enhancements for pgwatch (v3), specifically for the implementation of the latest metrics button and UI improvements. The documentation for the latest metrics button is available within this branch.
+This branch contains code enhancements for pgwatch (v3), specifically for the implementation of the latest metrics and compare button, along with improvements. The documentation for the latest metrics and compare metrics buttons are available within this branch.
 
 For more details on UI enhancements, refer to the `pavitra` branch, where its documentation and additional details are maintained.
 
