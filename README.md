@@ -17,7 +17,8 @@ This branch contains improvements and modifications made to **pgwatch2 v1.14.0**
 This branch focuses on feature additions and improvements in **pgwatch v3**, including:  
 
 - **Real-time Metrics Fetching & PDF Export (pgwatch v3):**  
-  Added a button to fetch the latest data from the database and calculate metrics such as **TPS, QPS, buffer hit ratio**, etc., with an option to download them as a PDF.  
+  Added a button to fetch the latest data from the database and calculate metrics such as **TPS, QPS, buffer hit ratio**, etc., with an option to download them as a Json file.
+  Also added a button that compares metrics between two databases and visualises the difference as a chart as well.  
 
 🔗 **[View Arjun's Work](https://github.com/ml-agg08/pgwatch2--enhancements/blob/arjun/README.md)**  
 
